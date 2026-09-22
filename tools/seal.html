@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Seal / Unseal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="robots" content="noindex, nofollow"/>
+<style>
+  :root{--bg:#1d1b22;--panel:#26242d;--line:#3a3743;--ink:#eee8f0;--soft:#a49dad;--rose:#e8899b;--gold:#e8b04b;--ok:#7ec9a5;--bad:#e88f8f;}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--bg);color:var(--ink);padding:28px 20px 60px;}
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{font-size:1.35rem;font-weight:600;letter-spacing:.02em;}
+  .sub{color:var(--soft);margin-top:8px;font-size:.86rem;}
+  .warn{margin-top:18px;padding:12px 14px;border-radius:8px;background:rgba(232,176,75,.1);border:1px solid rgba(232,176,75,.35);color:#f0d9a8;font-size:.82rem;}
+  .panel{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;}
+  .panel h2{font-size:.72rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+  label{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--soft);margin:12px 0 6px;}
+  textarea,input{width:100%;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#1a181f;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:11px 12px;outline:none;resize:vertical;}
+  textarea:focus,input:focus{border-color:var(--rose);}
+  textarea{min-height:170px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  button{font:600 .72rem/1 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase;padding:12px 18px;border-radius:7px;border:1px solid var(--line);background:#32303b;color:var(--ink);cursor:pointer;}
+  button:hover{border-color:var(--rose);}
+  button.primary{background:var(--rose);border-color:var(--rose);color:#2a1b20;}
+  .msg{margin-top:12px;font-size:.82rem;min-height:18px;}
+  .msg.ok{color:var(--ok);} .msg.bad{color:var(--bad);}
+  .steps{margin-top:14px;font-size:.82rem;color:var(--soft);}
+  .steps li{margin:6px 0 6px 18px;}
+  code{background:#1a181f;padding:2px 6px;border-radius:4px;color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Seal / Unseal</h1>
+  <p class="sub">Locks the private page with the nickname. Everything happens inside this browser tab &mdash; nothing is uploaded anywhere.</p>
+
+  <div class="warn" id="warn" hidden></div>
+
+  <!-- ============ SEAL ============ -->
+  <div class="panel">
+    <h2>Seal &mdash; turn content into her.sealed.js</h2>
+    <label for="sPhrase">nickname (case does not matter)</label>
+    <input id="sPhrase" type="text" value="chonks" autocomplete="off" spellcheck="false"/>
+    <label for="sIn">the private page HTML</label>
+    <textarea id="sIn" spellcheck="false" placeholder="Paste the contents of private-draft/her-content.html here&#10;(or whatever you have edited it into)"></textarea>
+    <div class="row">
+      <button class="primary" id="sealBtn">Seal it</button>
+      <button id="sealCopy">Copy result</button>
+      <button id="sealDl">Download her.sealed.js</button>
+    </div>
+    <p class="msg" id="sealMsg"></p>
+    <label for="sOut">her.sealed.js &mdash; replace the file in the repo with this</label>
+    <textarea id="sOut" spellcheck="false" readonly></textarea>
+    <ol class="steps">
+      <li>Paste your edited HTML above and press <b>Seal it</b>.</li>
+      <li>Copy the result into <code>her.sealed.js</code> in the repo (replace the whole file).</li>
+      <li>Commit. Done &mdash; <code>her.html</code> itself never needs touching.</li>
+    </ol>
+  </div>
+
+  <!-- ============ UNSEAL ============ -->
+  <div class="panel">
+    <h2>Unseal &mdash; get the content back out to edit it</h2>
+    <label for="uPhrase">nickname</label>
+    <input id="uPhrase" type="text" value="chonks" autocomplete="off" spellcheck="false"/>
+    <label for="uIn">paste her.sealed.js (the whole file is fine)</label>
+    <textarea id="uIn" spellcheck="false" placeholder="window.__SEALED__ = {&quot;v&quot;:1, ...};"></textarea>
+    <div class="row">
+      <button class="primary" id="unsealBtn">Unseal it</button>
+      <button id="unsealCopy">Copy result</button>
+    </div>
+    <p class="msg" id="unsealMsg"></p>
+    <label for="uOut">your content, back in one piece</label>
+    <textarea id="uOut" spellcheck="false"></textarea>
+  </div>
+
+</div>
+
+<script>
+const ITER = 250000;
+const enc = new TextEncoder(), dec = new TextDecoder();
+const b64e = u8 => btoa(String.fromCharCode(...new Uint8Array(u8)));
+const b64d = s  => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const $ = id => document.getElementById(id);
+
+if(!window.crypto || !window.crypto.subtle){
+  const w = $('warn');
+  w.hidden = false;
+  w.textContent = 'This tool needs a secure context. Opening it straight off your disk (file://) will not work — '
+                + 'open it from the published https:// address instead, e.g. https://<you>.github.io/birthday/tools/seal.html. '
+                + 'It still runs entirely in your browser; nothing is sent to the server.';
+}
+
+async function deriveKey(phrase, salt, usage){
+  const base = await crypto.subtle.importKey('raw', enc.encode(phrase.trim().toLowerCase()), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations:ITER, hash:'SHA-256' },
+    base, { name:'AES-GCM', length:256 }, false, [usage]
+  );
+}
+
+function setMsg(el, text, kind){
+  el.textContent = text;
+  el.className = 'msg' + (kind ? ' ' + kind : '');
+}
+
+/* ---------- seal ---------- */
+$('sealBtn').addEventListener('click', async () => {
+  const phrase = $('sPhrase').value.trim();
+  const html = $('sIn').value;
+  const msg = $('sealMsg');
+  if(!phrase){ return setMsg(msg, 'Give it a nickname first.', 'bad'); }
+  if(!html.trim()){ return setMsg(msg, 'Nothing to seal — paste the HTML above.', 'bad'); }
+  try{
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv   = crypto.getRandomValues(new Uint8Array(12));
+    const key  = await deriveKey(phrase, salt, 'encrypt');
+    const ct   = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, enc.encode(html));
+    const payload = { v:1, iter:ITER, salt:b64e(salt), iv:b64e(iv), ct:b64e(ct) };
+    $('sOut').value =
+      '/* Encrypted. Generated by tools/seal.html - do not edit by hand.\n'
+    + '   Without the nickname this file is noise, and that is the point. */\n'
+    + 'window.__SEALED__ = ' + JSON.stringify(payload) + ';\n';
+    setMsg(msg, 'Sealed. ' + html.length + ' characters locked behind "' + phrase.toLowerCase() + '".', 'ok');
+  }catch(e){
+    setMsg(msg, 'Could not seal: ' + e.message, 'bad');
+  }
+});
+
+/* ---------- unseal ---------- */
+$('unsealBtn').addEventListener('click', async () => {
+  const phrase = $('uPhrase').value.trim();
+  const raw = $('uIn').value;
+  const msg = $('unsealMsg');
+  if(!phrase){ return setMsg(msg, 'Need the nickname.', 'bad'); }
+
+  const m = raw.match(/\{[\s\S]*\}/);
+  if(!m){ return setMsg(msg, 'Could not find the sealed payload in that text.', 'bad'); }
+
+  let payload;
+  try{ payload = JSON.parse(m[0]); }
+  catch(e){ return setMsg(msg, 'That payload is not valid JSON.', 'bad'); }
+  if(!payload.ct || !payload.salt || !payload.iv){ return setMsg(msg, 'That payload is missing fields.', 'bad'); }
+
+  try{
+    const key = await deriveKey(phrase, b64d(payload.salt), 'decrypt');
+    const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64d(payload.iv) }, key, b64d(payload.ct));
+    $('uOut').value = dec.decode(plain);
+    setMsg(msg, 'Open. Edit it above, then seal it again.', 'ok');
+  }catch(e){
+    setMsg(msg, 'Wrong nickname — that did not unlock it.', 'bad');
+  }
+});
+
+/* ---------- copy / download ---------- */
+function copyFrom(id, msgEl){
+  const ta = $(id);
+  if(!ta.value){ return setMsg(msgEl, 'Nothing to copy yet.', 'bad'); }
+  ta.select();
+  navigator.clipboard.writeText(ta.value)
+    .then(() => setMsg(msgEl, 'Copied to clipboard.', 'ok'))
+    .catch(() => { document.execCommand('copy'); setMsg(msgEl, 'Copied.', 'ok'); });
+}
+$('sealCopy').addEventListener('click', () => copyFrom('sOut', $('sealMsg')));
+$('unsealCopy').addEventListener('click', () => copyFrom('uOut', $('unsealMsg')));
+
+$('sealDl').addEventListener('click', () => {
+  const v = $('sOut').value;
+  if(!v){ return setMsg($('sealMsg'), 'Seal something first.', 'bad'); }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([v], { type:'text/javascript' }));
+  a.download = 'her.sealed.js';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>

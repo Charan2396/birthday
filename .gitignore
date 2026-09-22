@@ -1,0 +1,7 @@
+# The unencrypted private page. NEVER commit this.
+# If you lose it, unseal her.sealed.js with tools/seal.html to get it back.
+private-draft/
+
+.DS_Store
+Thumbs.db
+node_modules/
