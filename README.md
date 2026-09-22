@@ -51,8 +51,22 @@ autoload — it only starts downloading when someone actually presses play.
 
 ## The private page
 
-`her.html` asks for a nickname and opens only for **chonks** (any capitalisation;
-spaces are trimmed).
+### How you get in
+
+There is no link to it. At the very bottom of the public page there is a small
+**❤️** above the date. It breathes very faintly and it is clickable — that is
+the door. Clicking it pops up the nickname prompt right there on the page.
+
+Get it right and it takes you straight through to the private page, already
+open — no second prompt. Get it wrong and it just shakes.
+
+**Tell Anisha to press the heart.** Nothing on the page says so, which is the
+point, but it also means she will not find it unless you point at it once.
+
+`her.html` also still works as a direct URL, and asks for the nickname itself if
+you arrive that way.
+
+The word is **chonks** — any capitalisation, spaces trimmed.
 
 It is **actually encrypted**, not just hidden. The content is AES-256-GCM
 encrypted with a key derived from the nickname (PBKDF2-SHA256, 250,000

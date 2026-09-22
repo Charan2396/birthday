@@ -329,25 +329,84 @@
   }
   .wish.show{opacity:1;}
 
-  /* ===== DOOR ===== */
-  .door-band{text-align:center; padding:70px 24px 40px;}
-  .door{
-    display:inline-flex; flex-direction:column; align-items:center; gap:10px;
-    text-decoration:none; color:inherit;
-    padding:26px 34px; border-radius:16px;
-    background:var(--paper);
-    border:1px solid rgba(142,121,176,0.35);
-    box-shadow:0 16px 36px rgba(74,55,48,0.13);
-    transition:transform .3s ease, box-shadow .3s ease;
+  /* ===== FOOTER  (the heart is the way in) ===== */
+  footer{text-align:center; padding:56px 24px 64px;}
+  .mono{
+    display:inline-block;
+    font-family:'Pacifico',cursive; font-size:1.9rem; line-height:1;
+    color:var(--gold); opacity:.65;
+    background:none; border:0; padding:8px 16px; margin:0;
+    cursor:pointer; -webkit-tap-highlight-color:transparent;
+    animation:breathe 4.5s ease-in-out infinite;
+    transition:opacity .4s ease;
   }
-  .door:hover{transform:translateY(-4px); box-shadow:0 22px 44px rgba(74,55,48,0.19);}
-  .door .lock{font-size:1.7rem;}
-  .door .d-t{font-family:'Fraunces',serif; font-style:italic; font-size:1.18rem; color:var(--lilac-dk);}
-  .door .d-s{font-size:0.62rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--ink-soft);}
-
-  footer{text-align:center; padding:26px 24px 64px;}
-  .mono{font-family:'Pacifico',cursive; font-size:1.9rem; color:var(--gold); opacity:.65;}
+  .mono:hover{opacity:.95;}
+  .mono:focus-visible{outline:2px solid rgba(233,180,76,0.65); outline-offset:4px; border-radius:10px;}
+  @keyframes breathe{
+    0%,100%{transform:scale(1); opacity:.58;}
+    50%{transform:scale(1.06); opacity:.84;}
+  }
   .foot-note{font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-soft); margin-top:6px;}
+
+  /* ===== the quiet door ===== */
+  #peek{
+    position:fixed; inset:0; z-index:80;
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    background:rgba(74,55,48,0.45); backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden;
+    transition:opacity .35s ease, visibility .35s ease;
+  }
+  #peek.on{opacity:1; visibility:visible;}
+  .peek-card{
+    position:relative; width:min(400px,100%);
+    background:var(--paper); border-radius:20px;
+    border:1px solid rgba(233,180,76,0.45);
+    box-shadow:0 26px 60px rgba(74,55,48,0.32);
+    padding:38px 30px 30px; text-align:center;
+    transform:translateY(16px) scale(0.97);
+    transition:transform .35s cubic-bezier(.2,.8,.3,1);
+  }
+  #peek.on .peek-card{transform:none;}
+  .peek-x{
+    position:absolute; top:9px; right:11px;
+    background:none; border:0; cursor:pointer;
+    font-size:1.15rem; line-height:1; color:var(--ink-soft);
+    padding:7px 9px; border-radius:8px;
+  }
+  .peek-x:hover{color:var(--rose-dk);}
+  .peek-lock{font-size:1.9rem; line-height:1;}
+  .peek-t{
+    font-family:'Fraunces',serif; font-style:italic;
+    font-size:1.3rem; line-height:1.4; color:var(--rose-dk); margin-top:14px;
+  }
+  .peek-s{font-size:0.86rem; line-height:1.65; color:var(--ink-soft); margin-top:10px;}
+  .peek-form{margin-top:22px; display:flex; flex-direction:column; gap:10px;}
+  .peek-form input{
+    font-family:'Poppins',sans-serif; font-size:1.02rem; text-align:center;
+    padding:13px 15px; border-radius:12px;
+    border:1px solid rgba(212,101,127,0.35);
+    background:var(--cream); color:var(--ink); outline:none;
+    transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .peek-form input:focus{border-color:var(--rose-dk); box-shadow:0 0 0 3px rgba(242,160,181,0.22);}
+  .peek-form button{
+    font-family:'Poppins',sans-serif; font-weight:600;
+    font-size:0.7rem; letter-spacing:0.22em; text-transform:uppercase;
+    padding:13px 18px; border-radius:12px; border:0; cursor:pointer;
+    background:var(--rose-dk); color:#fff;
+    transition:background .2s ease, transform .15s ease;
+  }
+  .peek-form button:hover{background:#c2556e;}
+  .peek-form button:active{transform:scale(.985);}
+  .peek-form button[disabled]{opacity:.6; cursor:default;}
+  .peek-msg{margin-top:13px; min-height:19px; font-size:0.83rem; color:var(--rose-dk);}
+  .peek-msg.quiet{color:var(--ink-soft);}
+  .peek-shake{animation:pshake .45s;}
+  @keyframes pshake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px);} 40%{transform:translateX(7px);}
+    60%{transform:translateX(-5px);} 80%{transform:translateX(3px);}
+  }
 
   .reveal{opacity:0; transform:translateY(22px); transition:opacity .9s ease, transform .9s ease;}
   .reveal.on{opacity:1; transform:none;}
@@ -461,21 +520,31 @@
     <p class="wish" id="cakeWish"></p>
   </section>
 
-  <!-- ===== DOOR ===== -->
-  <section class="door-band reveal">
-    <a class="door" href="her.html">
-      <span class="lock">&#128274;</span>
-      <span class="d-t">one more thing, just for you</span>
-      <span class="d-s">only one person can open this</span>
-    </a>
-  </section>
-
   <footer>
-    <div class="mono">&#10084;&#65039;</div>
+    <button class="mono" id="heart" type="button" aria-label="heart">&#10084;&#65039;</button>
     <p class="foot-note">september twenty&#8209;sixth</p>
   </footer>
 
 </main>
+
+<!-- the quiet door. nothing readable lives here; the letter is fetched
+     and decrypted only if somebody knows the word. -->
+<div id="peek" role="dialog" aria-modal="true" aria-labelledby="peekT" hidden>
+  <div class="peek-card" id="peekCard">
+    <button class="peek-x" id="peekX" type="button" aria-label="close">&#10005;</button>
+    <div class="peek-lock">&#128274;</div>
+    <p class="peek-t" id="peekT">this one is not for everyone.</p>
+    <p class="peek-s">There is a name only one person calls me. If you are her, you already know it.</p>
+    <form class="peek-form" id="peekForm" autocomplete="off">
+      <input id="peekInput" type="password" inputmode="text"
+             placeholder="what do you call me?"
+             aria-label="nickname"
+             autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"/>
+      <button type="submit" id="peekBtn">open it</button>
+    </form>
+    <p class="peek-msg" id="peekMsg"></p>
+  </div>
+</div>
 
 <script>
 /* =========================================================
@@ -788,6 +857,124 @@ function burst(x, y){
       const r = cake.getBoundingClientRect();
       burst(r.left + r.width / 2, r.top + r.height / 3);
     }
+  });
+})();
+
+/* ---------- the quiet door in the footer ---------- */
+(function(){
+  const heart = document.getElementById('heart');
+  const peek  = document.getElementById('peek');
+  const card  = document.getElementById('peekCard');
+  const form  = document.getElementById('peekForm');
+  const input = document.getElementById('peekInput');
+  const btn   = document.getElementById('peekBtn');
+  const msg   = document.getElementById('peekMsg');
+  const close = document.getElementById('peekX');
+  if(!heart || !peek) return;
+
+  // NOTE: these must stay identical to the ones in her.html.
+  // PBKDF2-SHA256 / 250,000 iterations / AES-256-GCM.
+  const KEY_STORE = 'bd_open';
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+  let sealedPromise = null;
+  function loadSealed(){
+    // the ciphertext is only fetched once somebody actually finds the heart
+    if(sealedPromise) return sealedPromise;
+    sealedPromise = new Promise(function(resolve, reject){
+      if(window.__SEALED__) return resolve(window.__SEALED__);
+      const sc = document.createElement('script');
+      sc.src = 'her.sealed.js';
+      sc.onload  = () => window.__SEALED__ ? resolve(window.__SEALED__) : reject(new Error('empty'));
+      sc.onerror = () => reject(new Error('load failed'));
+      document.head.appendChild(sc);
+    });
+    return sealedPromise;
+  }
+
+  async function unlock(phrase){
+    const norm = (phrase || '').trim().toLowerCase();
+    if(!norm) return false;
+    const SEALED = await loadSealed();
+    const base = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(norm), 'PBKDF2', false, ['deriveKey']
+    );
+    const key = await crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt:b64(SEALED.salt), iterations:SEALED.iter || 250000, hash:'SHA-256' },
+      base, { name:'AES-GCM', length:256 }, false, ['decrypt']
+    );
+    // throws if the word is wrong - GCM will not authenticate
+    await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64(SEALED.iv) }, key, b64(SEALED.ct));
+    return true;
+  }
+
+  function say(text, quiet){
+    msg.textContent = text || '';
+    msg.classList.toggle('quiet', !!quiet);
+  }
+
+  function open(){
+    peek.hidden = false;
+    requestAnimationFrame(() => peek.classList.add('on'));
+    setTimeout(() => input.focus(), 120);
+    loadSealed().catch(() => {});
+  }
+
+  function shut(){
+    peek.classList.remove('on');
+    say('');
+    input.value = '';
+    setTimeout(() => { peek.hidden = true; }, 380);
+    heart.focus();
+  }
+
+  let misses = 0;
+  const nudges = [
+    'that is not it. you know this one.',
+    'nope. think about what you actually call me.',
+    'still no. the one you use in front of everyone.'
+  ];
+
+  heart.addEventListener('click', open);
+  close.addEventListener('click', shut);
+  peek.addEventListener('click', e => { if(e.target === peek) shut(); });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape' && peek.classList.contains('on')) shut();
+  });
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const phrase = input.value;
+    if(!phrase.trim()) return;
+
+    if(!window.crypto || !window.crypto.subtle){
+      say('This needs a secure connection. Open the real https link, not a local file.');
+      return;
+    }
+
+    btn.disabled = true;
+    say('opening…', true);
+
+    let ok = false;
+    try{ ok = await unlock(phrase); }
+    catch(err){ ok = false; }
+    btn.disabled = false;
+
+    if(ok){
+      // her.html reads this on load and opens itself - no second prompt
+      try{ sessionStorage.setItem(KEY_STORE, phrase.trim().toLowerCase()); }catch(err){}
+      say('there you are ❤️', true);
+      setTimeout(() => { window.location.href = 'her.html'; }, 550);
+      return;
+    }
+
+    misses++;
+    say(nudges[Math.min(misses - 1, nudges.length - 1)]);
+    card.classList.remove('peek-shake');
+    void card.offsetWidth;
+    card.classList.add('peek-shake');
+    input.value = '';
+    input.focus();
   });
 })();
 
